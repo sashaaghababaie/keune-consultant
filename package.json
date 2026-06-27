@@ -5,13 +5,20 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "./fix-public-permissions.sh",
+    "gh-build-deploy": "next build && pnpm postbuild && gh-pages -d out --nojekyll",
+    "gh-deploy": "gh-pages -d out --nojekyll",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "clsx": "^2.1.1",
+    "gh-pages": "^6.3.0",
     "next": "16.2.4",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "react-icons": "^5.6.0",
+    "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
