@@ -47,9 +47,6 @@ const initialQuestions: QuestionProps[] = [
     condition(answers) {
       const newSlides: string[] = [];
 
-      // if (!answers || !answers.length) {
-      //   return { type: "add", slides: newSlides };
-      // }
       newSlides.push("b-1");
       if (answers?.includes("Men")) {
         return [{ type: "add", slides: newSlides }];
@@ -61,8 +58,6 @@ const initialQuestions: QuestionProps[] = [
           },
         ];
       }
-
-      // return newSlides;
     },
   },
   {
@@ -78,12 +73,12 @@ const initialQuestions: QuestionProps[] = [
       options: ["Yes", "No"],
     },
     condition(answers) {
-      const newSlides: string[] = [];
-      newSlides.push("n-1", "n-2", "n-3", "n-4", "n-5");
       if (!answers || !answers.length || answers.includes("No")) {
-        return [{ type: "remove", slides: newSlides }];
+        return [
+          { type: "remove", slides: ["n-1", "n-2", "n-3", "n-4", "n-5"] },
+        ];
       } else {
-        return [{ type: "add", slides: newSlides }];
+        return [{ type: "add", slides: ["n-1", "n-2", "n-5"] }];
       }
 
       // if (answers?.includes("Yes")) {
@@ -733,9 +728,9 @@ export default function Home() {
         <div className="px-8 max-w-7xl w-full mx-auto">
           <div className="border-t-2" />
         </div>
-        <div className="flex w-full max-w-7xl mx-auto justify-between items-center px-8 pt-4 sm:px-44 h-24 md:h-48">
+        <div className="flex w-full max-w-7xl mx-auto justify-between items-center px-8 sm:px-44 h-20 md:pt-4 pt-0 md:h-36">
           <Button className="font-bold" onClick={() => setSlide(swiper!.prev)}>
-            Back
+            {"<"} Back
           </Button>
           <Pagination
             dots={paginationDots}
@@ -753,12 +748,12 @@ export default function Home() {
 
               if (!found.answer || found.answer.length === 0) return true;
             })()}
-            className={`font-bold rounded-none ${(swiper?.current ?? 0) === questions.length - 1 ? "bg-black text-white" : ""}`}
+            className={`font-bold text-xs sm:text-sm rounded-none ${(swiper?.current ?? 0) === questions.length - 1 ? "bg-black text-white" : ""}`}
             onClick={prepareQuestions}
           >
             {(swiper?.current ?? 0) === questions.length - 1
-              ? "SEE RESULTS"
-              : "Next"}
+              ? "RESULTS"
+              : "Next >"}
           </Button>
         </div>
         {openFirstModal && (
