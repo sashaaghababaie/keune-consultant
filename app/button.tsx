@@ -24,15 +24,7 @@ export default function Button({
   ...props
 }: ButtonProps) {
   return (
-    <button
-      className={cn(
-        baseClass,
-        variants[variant],
-        className,
-        "disabled:opacity-50 disabled:hover:none disabled:pointer-none",
-      )}
-      {...props}
-    >
+    <button className={cn(baseClass, variants[variant], className)} {...props}>
       {/* {loading && <>O</>} */}
       {children}
     </button>

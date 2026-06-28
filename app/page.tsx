@@ -1,10 +1,13 @@
 "use client";
+
 import Button from "./button";
 import { Navbar } from "./navbar";
-import { Modal, ModalContent, ModalFooter, ModalHeader } from "./modal";
+import { Modal, ModalContent, ModalHeader } from "./modal";
 import { ResultsModal } from "./result-modal";
 import { Slider, SliderState } from "./slider";
 import { GrNetwork } from "react-icons/gr";
+import { StartModal } from "./start-modal";
+import { Pagination } from "./pagination";
 import {
   ChangeEvent,
   Children,
@@ -80,12 +83,6 @@ const initialQuestions: QuestionProps[] = [
       } else {
         return [{ type: "add", slides: ["n-1", "n-2", "n-5"] }];
       }
-
-      // if (answers?.includes("Yes")) {
-      //   // newSlides.push("n-1", "n-2", "n-3");
-      // }
-
-      // return newSlides;
     },
   },
   {
@@ -119,7 +116,6 @@ const initialQuestions: QuestionProps[] = [
     fields: {
       type: "multi",
       options: [
-        // "None",
         "Dandruff",
         "Itching",
         "Flaking (dry scalp)",
@@ -213,19 +209,14 @@ const initialQuestions: QuestionProps[] = [
       ],
     },
     condition(answers) {
-      // const newSlides: string[] = [];
       if (!answers || answers.length === 0) {
         return [{ type: "remove", slides: ["f-1"] }];
       }
       if (answers?.includes("No")) {
         return [{ type: "remove", slides: ["f-1"] }];
-        //
       } else {
         return [{ type: "add", slides: ["f-1"] }];
-        // newSlides.push("f-1");
       }
-
-      // return newSlides;
     },
   },
   {
@@ -238,7 +229,6 @@ const initialQuestions: QuestionProps[] = [
       options: ["No", "Yes, Low", "Yes, Medium", "Yes, High"],
     },
   },
-
   {
     id: "g",
     questionName: "hair-wash",
@@ -380,7 +370,7 @@ const initialQuestions: QuestionProps[] = [
     id: "n-1",
     questionName: "beard-skin-condition",
     question: [
-      "How would you describe the condition of the skin beneath your beard",
+      "How would you describe the condition of the skin beneath your beard?",
     ],
     image: "",
     fields: {
@@ -394,7 +384,7 @@ const initialQuestions: QuestionProps[] = [
     questionName: "beard-skin-concerns",
     question: [
       "Do you experience any of the following concerns",
-      "with the skin beneath your beard",
+      "with the skin beneath your beard?",
     ],
     sub: "Select all that apply",
     image: "",
@@ -412,7 +402,6 @@ const initialQuestions: QuestionProps[] = [
       const slideParams: { type: "add" | "remove"; slides: string[] }[] = [];
 
       if (!answers || !answers.length) {
-        // return newSlides;
         return [{ type: "remove", slides: ["n-3", "n-4"] }];
       }
 
@@ -475,7 +464,7 @@ const initialQuestions: QuestionProps[] = [
     id: "n-5",
     questionName: "beard-concerns",
     question: ["What beard hair concerns do you currently have?"],
-    sub: "(Select all that apply)",
+    sub: "Select all that apply",
     image: "",
     fields: {
       type: "multi",
@@ -767,108 +756,6 @@ export default function Home() {
         )}
       </main>
     </>
-  );
-}
-
-function StartModal({
-  isOpen,
-  onClose,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-}) {
-  return (
-    <Modal size="xl" isOpen={isOpen} onClose={onClose}>
-      <ModalHeader>KEUNE CARE CONSUlTATION</ModalHeader>
-
-      <ModalContent className="text-center px-12">
-        <h2 className="text-lg font-bold pb-4">
-          {/* Welcome to the Keune CARE Hair & Beard Consultant */}
-          Keune B2C online Haircare Consultation
-        </h2>
-
-        <div className="flex pb-8 justify-center">
-          <div className="flex gap-4 items-center">
-            <img src="logo.png" alt="logo" className="h-24" />
-            <p className="text-4xl mt-11">BHC</p>
-          </div>
-        </div>
-        <div className="space-y-12">
-          <p>
-            BHC is a personalized digital hair wellness platform designed to
-            transform the way consumers discover, understand, and care for their
-            hair.
-            {/* Healthy hair starts with understanding its unique needs. This
-            personalized consultation is designed to assess your hair and beard
-            characteristics, identify current concerns, and guide you toward the
-            most effective care routine and product recommendations. By
-            understanding your individual profile, we can help you achieve
-            healthier-looking hair, improved manageability, and lasting
-            confidence in your daily care choices. */}
-          </p>
-          <div className="flex gap-2 bg-slate-200 p-4">
-            {/* <div className="bg-black/10 rounded-full shrink-0 w-16 h-16" />
-            <p className="text-xs">
-              The questions in this consultation have been carefully curated by
-              <b> ELNAZ ADIB</b>, based on professional expertise and more than
-              five years of experience with Keune's professional care portfolio.
-            </p> */}
-            <p className="text-xs">
-              The survey will only take a few minutes to complete. Click to
-              start your hair wellness journey
-            </p>
-          </div>
-          {/* <p>
-            Take a few moments to complete the consultation and discover the
-            care solutions best suited to you.
-          </p> */}
-        </div>
-      </ModalContent>
-      <ModalFooter>
-        <div className="flex justify-center items-center gap-3 flex-col">
-          <img src="keune-care-logo.webp" className="w-20" />
-          <button
-            onClick={onClose}
-            className="bg-black hover:bg-black/80 text-white h-8 min-w-32 px-2"
-          >
-            Start
-          </button>
-        </div>
-      </ModalFooter>
-    </Modal>
-  );
-}
-
-function Pagination({
-  dots,
-  activeIndex,
-  onExited,
-}: {
-  dots: { id: string; exiting: boolean }[];
-  activeIndex: number;
-  onExited: (id: string) => void;
-}) {
-  return (
-    <div className="flex items-center gap-1">
-      {dots.map((dot, i) => (
-        <div
-          key={dot.id}
-          className={dot.exiting ? "dot-exit" : "dot-enter"}
-          onAnimationEnd={() => {
-            if (dot.exiting) onExited(dot.id);
-          }}
-          style={{
-            width: 5,
-            height: 5,
-            borderRadius: "50%",
-            flexShrink: 0,
-            backgroundColor:
-              !dot.exiting && i === activeIndex ? "black" : "rgba(0,0,0,0.3)",
-            transition: "background-color 300ms",
-          }}
-        />
-      ))}
-    </div>
   );
 }
 
