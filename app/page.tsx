@@ -2,8 +2,8 @@
 
 import Button from "./button";
 import { Navbar } from "./navbar";
-import { Modal, ModalContent, ModalHeader } from "./modal";
-import { ResultsModal } from "./result-modal";
+// import { Modal, ModalContent, ModalHeader } from "./modal";
+import { ResultsModal2 } from "./result-modal-2";
 import { Slider, SliderState } from "./slider";
 import { GrNetwork } from "react-icons/gr";
 import { StartModal } from "./start-modal";
@@ -16,6 +16,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { Drawer, DrawerContent, DrawerHeader } from "./drawer";
 
 const initialQuestions: QuestionProps[] = [
   {
@@ -89,18 +90,57 @@ const initialQuestions: QuestionProps[] = [
     id: "c",
     questionName: "hair-type",
     question: ["What is your natural hair type?"],
-    help: { title: "Help", content: <>Short text</> },
-    image: "hair-types.webp",
+    help: {
+      title: "How to identify my hair type?",
+      content: <>Short text</>,
+      question: "Need help for identifying hair type?",
+    },
+    image: "",
+    // image: "hair-types.webp",
     fields: {
       type: "single",
-      options: ["1", "2A", "2B", "2C", "3A", "3B", "3C", "4A", "4B", "4C"],
+      optionType: "image",
+      imageGroups: [
+        {
+          label: "Straight",
+          options: [{ value: "1", image: "hair-types/1.webp", label: "1" }],
+        },
+        {
+          label: "Wavy",
+          options: [
+            { value: "2A", image: "hair-types/2a.webp", label: "2A" },
+            { value: "2B", image: "hair-types/2b.webp", label: "2B" },
+            { value: "2C", image: "hair-types/2c.webp", label: "2C" },
+          ],
+        },
+        {
+          label: "Curly",
+          options: [
+            { value: "3A", image: "hair-types/3a.webp", label: "3A" },
+            { value: "3B", image: "hair-types/3b.webp", label: "3B" },
+            { value: "3C", image: "hair-types/3c.webp", label: "3C" },
+          ],
+        },
+        {
+          label: "Coily",
+          options: [
+            { value: "4A", image: "hair-types/4a.webp", label: "4A" },
+            { value: "4B", image: "hair-types/4b.webp", label: "4B" },
+            { value: "4C", image: "hair-types/4c.webp", label: "4C" },
+          ],
+        },
+      ],
     },
   },
   {
     id: "d",
     questionName: "scalp-condition",
     question: ["How would you describe your scalp condition?"],
-    help: { title: "Help", content: <>Long text</> },
+    help: {
+      title: "Help",
+      content: <>Long text</>,
+      question: "Know about different scalp conditions.",
+    },
     image: "",
     fields: {
       type: "single",
@@ -197,7 +237,11 @@ const initialQuestions: QuestionProps[] = [
     question: [
       "Have you had any hair treatments such as keratin, protein, or Botox?",
     ],
-    help: { title: "Help", content: <>Long text</> },
+    help: {
+      title: "Help",
+      content: <>Long text</>,
+      question: "Need help with hair treatments?",
+    },
     image: "",
     fields: {
       type: "single",
@@ -483,6 +527,10 @@ const initialQuestions: QuestionProps[] = [
   },
 ];
 
+const isActiveAutomaticNavigation = true;
+
+const SUMMARY_SLIDE_ID = "final";
+
 const createEmptyQuestion = (item: (typeof initialQuestions)[number]) => {
   const q = {
     id: item.id,
@@ -516,6 +564,7 @@ export default function Home() {
   );
 
   const [currentSlide, setCurrentSlide] = useState(questions?.[0]);
+  const [autoAdvancePending, setAutoAdvancePending] = useState(false);
 
   useEffect(() => {
     if (!openFirstModal) {
@@ -559,16 +608,23 @@ export default function Home() {
     updated[index] = { ...updated[index], answer: e.target.value };
     setForm(updated);
 
+    const qIndex = questions.findIndex((q) => q.questionName === e.target.name);
+    const currentIndex = swiper?.current ?? 0;
+
+    // Auto-advance only when answering the slide currently on screen (not
+    // when editing a past answer after going back) so prepareQuestions still
+    // owns condition evaluation exactly once per slide.
+    if (isActiveAutomaticNavigation && qIndex === currentIndex) {
+      setAutoAdvancePending(true);
+      return;
+    }
+
     // Only re-evaluate conditions when the user is changing an answer on a
     // slide they already passed (went back). If it's the current or future
     // slide, prepareQuestions handles it on Next press to avoid double-apply.
     const q = questions.find((q) => q.questionName === e.target.name);
     if (!q?.condition) return;
-
-    const qIndex = questions.findIndex((q) => q.questionName === e.target.name);
-    const currentIndex = swiper?.current ?? 0;
     if (qIndex >= currentIndex) return;
-
     const ops = q.condition(e.target.value);
     let _questions = [...questions];
     let _form = updated;
@@ -621,7 +677,7 @@ export default function Home() {
 
   useEffect(() => {
     if (prepared) {
-      setSlide(swiper!.next);
+      setSlide((s) => s + 1);
       setPrepared(false);
     }
   }, [prepared]);
@@ -642,13 +698,35 @@ export default function Home() {
     setOpenResultsModal(false);
   };
 
+  const summarySlide: QuestionProps = {
+    id: SUMMARY_SLIDE_ID,
+    questionName: "summary",
+    question: [],
+    image: "",
+    fields: { type: "single" },
+  };
+
+  const appendSummarySlide = (
+    sortedQuestions: QuestionProps[],
+    sortedForm: ReturnType<typeof createEmptyQuestion>[],
+  ) => {
+    setQuestions([...sortedQuestions, summarySlide]);
+    setForm([...sortedForm, createEmptyQuestion(summarySlide)]);
+    setPrepared(true);
+  };
+
   const prepareQuestions = () => {
     const currentId = currentSlide.id;
+
+    if (currentId === SUMMARY_SLIDE_ID) {
+      setOpenResultsModal(true);
+      return;
+    }
 
     if (!currentSlide.condition) {
       const currentIndex = questions.findIndex((q) => q.id === currentId);
       if (currentIndex + 1 >= questions.length) {
-        setOpenResultsModal(true);
+        appendSummarySlide(questions, form);
         return;
       }
       setPrepared(true);
@@ -686,11 +764,24 @@ export default function Home() {
     setForm(sortedForm);
 
     if (currentIndex + 1 >= sortedQuestions.length) {
-      setOpenResultsModal(true);
+      appendSummarySlide(sortedQuestions, sortedForm);
       return;
     }
     setPrepared(true);
   };
+
+  useEffect(() => {
+    if (!isActiveAutomaticNavigation || !autoAdvancePending) return;
+
+    const timeout = setTimeout(() => {
+      setAutoAdvancePending(false);
+      prepareQuestions();
+    }, 350);
+
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoAdvancePending]);
+
   return (
     <>
       <Navbar />
@@ -704,14 +795,21 @@ export default function Home() {
             onChange={setSwiper}
             pauseOnHover={false}
           >
-            {questions.map((iq) => (
-              <Question
-                answers={form.find((q) => q.id === iq.id)?.answer || ""}
-                key={`question-${iq.id}`}
-                {...iq}
-                handleInput={handleStoreAnswers}
-              />
-            ))}
+            {questions.map((iq) =>
+              iq.id === SUMMARY_SLIDE_ID ? (
+                <SummarySlide
+                  key={`question-${iq.id}`}
+                  onShowResults={prepareQuestions}
+                />
+              ) : (
+                <Question
+                  answers={form.find((q) => q.id === iq.id)?.answer || ""}
+                  key={`question-${iq.id}`}
+                  {...iq}
+                  handleInput={handleStoreAnswers}
+                />
+              ),
+            )}
           </Slider>
         </div>
         <div className="px-8 max-w-7xl w-full mx-auto">
@@ -730,6 +828,8 @@ export default function Home() {
           />
           <Button
             disabled={(() => {
+              if (currentSlide.id === SUMMARY_SLIDE_ID) return false;
+
               const found = form.find((q) => q.id === currentSlide.id);
 
               if (!found) return false;
@@ -737,12 +837,14 @@ export default function Home() {
 
               if (!found.answer || found.answer.length === 0) return true;
             })()}
-            className={`font-bold text-xs sm:text-sm rounded-none ${(swiper?.current ?? 0) === questions.length - 1 ? "bg-black text-white" : ""}`}
+            className={`font-bold text-xs sm:text-sm rounded-none `}
+            // className={`font-bold text-xs sm:text-sm rounded-none ${(swiper?.current ?? 0) === questions.length - 1 ? "bg-white opacity-0 text-white" : ""}`}
             onClick={prepareQuestions}
           >
-            {(swiper?.current ?? 0) === questions.length - 1
+            {"Next >"}
+            {/* {(swiper?.current ?? 0) === questions.length - 1
               ? "RESULTS"
-              : "Next >"}
+              : "Next >"} */}
           </Button>
         </div>
         {openFirstModal && (
@@ -752,7 +854,7 @@ export default function Home() {
           />
         )}
         {openResultsModal && (
-          <ResultsModal isOpen={openResultsModal} onRetry={resetQuiz} />
+          <ResultsModal2 isOpen={openResultsModal} onRetry={resetQuiz} />
         )}
       </main>
     </>
@@ -768,15 +870,28 @@ interface CheckboxOrRadioProps {
   handleInput: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
+interface ImageOption {
+  value: string;
+  image: string;
+  label?: string;
+}
+
+interface ImageOptionGroup {
+  label: string;
+  options: ImageOption[];
+}
+
 interface Field {
   type: "multi" | "short-text" | "long-text" | "single";
   options?: string[];
+  optionType?: "text" | "image";
+  imageGroups?: ImageOptionGroup[];
 }
 
 interface QuestionProps {
   id: string;
   questionName: string;
-  help?: { title: string; content: ReactNode };
+  help?: { title: string; content: ReactNode; question: string };
   sub?: string;
   question: string[];
   image: string;
@@ -826,14 +941,14 @@ export function Question({
             ))}
           </>
           {sub && (
-            <p className="text-zinc-500 pt-6 font-normal text-sm">{sub}</p>
+            <p className="text-zinc-500 pt-6 font-normal text-lg">{sub}</p>
           )}
           {help && (
             <button
               onClick={() => setModal({ open: true, ...help })}
-              className="text-zinc-500 cursor-pointer pt-6 font-normal underline text-xs"
+              className="text-zinc-600 underline-offset-2 cursor-pointer pt-6 font-normal underline text-base"
             >
-              Need help?
+              {help.question}
             </button>
           )}
           {/* <div className="lg:hidden block">{image && <img src={image} />}</div> */}
@@ -867,6 +982,26 @@ export function Question({
   );
 }
 
+function SummarySlide({ onShowResults }: { onShowResults: () => void }) {
+  return (
+    <div className="h-full w-full flex flex-col items-center justify-center gap-8 text-center max-w-2xl mx-auto px-8">
+      <div className="flex flex-col gap-4">
+        <h2 className="text-3xl lg:text-4xl font-bold">You&apos;re all set</h2>
+        <p className="text-zinc-500 text-lg font-normal">
+          Based on your answers, we&apos;ve put together personalized
+          recommendations just for you.
+        </p>
+      </div>
+      <Button
+        className="font-bold text-base px-10 py-4 bg-black text-white"
+        onClick={onShowResults}
+      >
+        See my results
+      </Button>
+    </div>
+  );
+}
+
 function HelpModal({
   isOpen,
   title,
@@ -879,10 +1014,14 @@ function HelpModal({
   children: ReactNode;
 }) {
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <ModalHeader onClose={onClose}>{title}</ModalHeader>
-      <ModalContent>{children}</ModalContent>
-    </Modal>
+    <Drawer isOpen={isOpen} size="lg" onClose={onClose}>
+      <DrawerHeader onClose={onClose}>{title}</DrawerHeader>
+      <DrawerContent scrollable>{children}</DrawerContent>
+    </Drawer>
+    // <Modal isOpen={isOpen} onClose={onClose}>
+    //   <ModalHeader onClose={onClose}>{title}</ModalHeader>
+    //   <ModalContent>{children}</ModalContent>
+    // </Modal>
   );
 }
 export function FieldRenderer(
@@ -892,6 +1031,17 @@ export function FieldRenderer(
     handleInput: (e: ChangeEvent<HTMLInputElement>) => void;
   },
 ) {
+  if (props.optionType === "image") {
+    return (
+      <ImageOptionGroups
+        groups={props.imageGroups || []}
+        type={props.type as "single" | "multi"}
+        answers={props.answers}
+        name={props.questionName}
+        handleInput={props.handleInput}
+      />
+    );
+  }
   if (props.type === "multi") {
     return (
       <CheckboxGrid>
@@ -985,6 +1135,95 @@ export function Radio(props: CheckboxOrRadioProps) {
   );
 }
 
+interface ImageCheckboxOrRadioProps {
+  name: string;
+  value: string;
+  image: string;
+  label?: string;
+  answers: string | string[] | null;
+  handleInput: (e: ChangeEvent<HTMLInputElement>) => void;
+}
+
+function ImageOptionCard(
+  props: ImageCheckboxOrRadioProps & { type: "single" | "multi" },
+) {
+  const checked = !!props.answers?.includes(props.value);
+  return (
+    <label className="flex flex-col gap-1 cursor-pointer group w-18 sm:w-24">
+      <div
+        className={`relative aspect-square w-full overflow-hidden rounded-2xl border transition-all ${
+          checked
+            ? "border-black"
+            : "border-black/10 group-hover:border-black/30"
+        }`}
+      >
+        <img
+          src={props.image}
+          alt={props.label || props.value}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <input
+          name={props.name}
+          value={props.value}
+          checked={checked}
+          onChange={props.handleInput}
+          className="sr-only"
+          type={props.type === "multi" ? "checkbox" : "radio"}
+        />
+      </div>
+      {props.label && (
+        <p
+          className={`text-center text-xs font-medium transition-colors ${
+            checked ? "text-black" : "text-zinc-500"
+          }`}
+        >
+          {props.label}
+        </p>
+      )}
+    </label>
+  );
+}
+
+function ImageOptionGroups({
+  groups,
+  type,
+  answers,
+  name,
+  handleInput,
+}: {
+  groups: ImageOptionGroup[];
+  type: "single" | "multi";
+  answers: string | string[] | null;
+  name: string;
+  handleInput: (e: ChangeEvent<HTMLInputElement>) => void;
+}) {
+  return (
+    <div className="flex items-center flex-col gap-3 w-full">
+      {groups.map((group) => (
+        <div key={`group-${group.label}`} className="flex flex-col gap-1">
+          <h3 className="text-xs font-bold uppercase tracking-wide text-zinc-500">
+            {group.label}
+          </h3>
+          <div className="flex flex-row flex-wrap gap-1 sm:gap-4">
+            {group.options.map((option) => (
+              <ImageOptionCard
+                key={`option-${option.value}`}
+                type={type}
+                name={name}
+                value={option.value}
+                image={option.image}
+                label={option.label}
+                answers={answers}
+                handleInput={handleInput}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function RadioGrid({ children }: { children: ReactNode }) {
   const childrenArray = Children.toArray(children);
 
@@ -1034,3 +1273,23 @@ function CheckboxGrid({ children }: { children: ReactNode }) {
     </div>
   );
 }
+// backup
+// <Button
+//   disabled={(() => {
+//     const found = form.find((q) => q.id === currentSlide.id);
+
+//     if (!found) return false;
+//     if (found.type === "multi") return false;
+
+//     if (!found.answer || found.answer.length === 0) return true;
+//   })()}
+//   className={`font-bold text-xs sm:text-sm rounded-none ${(swiper?.current ?? 0) === questions.length - 1 ? "bg-black text-white" : ""}`}
+//   onClick={prepareQuestions}
+// >
+//   {/* {(swiper?.current ?? 0) === questions.length - 1
+//     ? "RESULTS"
+//     : "Next >"} */}
+//   {(swiper?.current ?? 0) === questions.length - 1
+//     ? "RESULTS"
+//     : "Next >"}
+// </Button>
