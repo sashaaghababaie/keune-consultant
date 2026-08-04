@@ -4,6 +4,7 @@ import Button from "./button";
 import { Navbar } from "./navbar";
 // import { Modal, ModalContent, ModalHeader } from "./modal";
 import { ResultsModal2 } from "./result-modal-2";
+import { ResultsModal3 } from "./result-modal-3";
 import { Slider, SliderState } from "./slider";
 import { GrNetwork } from "react-icons/gr";
 import { StartModal } from "./start-modal";
@@ -51,41 +52,20 @@ const initialQuestions: QuestionProps[] = [
     condition(answers) {
       const newSlides: string[] = [];
 
-      newSlides.push("b-1");
+      newSlides.push("n");
       if (answers?.includes("Men")) {
         return [{ type: "add", slides: newSlides }];
       } else {
         return [
           {
             type: "remove",
-            slides: ["b-1", "n-1", "n-2", "n-3", "n-4", "n-5"],
+            slides: ["n", "n-1", "n-2", "n-3", "n-4", "n-5"],
           },
         ];
       }
     },
   },
-  {
-    id: "b-1",
-    questionName: "need-beard",
-    question: [
-      "Would you like personalized recommendations for beard care products",
-      "based on your beard type and concerns?",
-    ],
-    image: "",
-    fields: {
-      type: "single",
-      options: ["Yes", "No"],
-    },
-    condition(answers) {
-      if (!answers || !answers.length || answers.includes("No")) {
-        return [
-          { type: "remove", slides: ["n-1", "n-2", "n-3", "n-4", "n-5"] },
-        ];
-      } else {
-        return [{ type: "add", slides: ["n-1", "n-2", "n-5"] }];
-      }
-    },
-  },
+
   {
     id: "c",
     questionName: "hair-type",
@@ -160,12 +140,13 @@ const initialQuestions: QuestionProps[] = [
         "Itching",
         "Flaking (dry scalp)",
         "Sensitivity/irritation",
+        "None",
       ],
     },
     condition(answers) {
       const slideParams: { type: "add" | "remove"; slides: string[] }[] = [];
 
-      if (!answers || !answers.length) {
+      if (!answers || !answers.length || answers.includes("None")) {
         // return newSlides;
         return [{ type: "remove", slides: ["e-1", "e-2"] }];
       }
@@ -364,7 +345,7 @@ const initialQuestions: QuestionProps[] = [
     id: "l",
     questionName: "hair-concerns",
     question: ["What hair concerns do you currently have?"],
-    sub: "Select all that apply",
+    sub: "Select up to 3 options",
     image: "",
     fields: {
       type: "multi",
@@ -397,10 +378,11 @@ const initialQuestions: QuestionProps[] = [
     id: "m",
     questionName: "styling-products",
     question: ["What are your primary hair styling goals?"],
-    sub: "Select all that apply",
+    sub: "Only select your primary goal",
     image: "",
     fields: {
-      type: "multi",
+      // type: "multi",
+      type: "single",
       options: [
         "Increase Volume and Body",
         "Enhance Softness and Smoothness",
@@ -408,6 +390,28 @@ const initialQuestions: QuestionProps[] = [
         "Improve Styling Control and Hold",
         "Maintain a Natural Look and Feel",
       ],
+    },
+  },
+  {
+    id: "n",
+    questionName: "need-beard",
+    question: [
+      "Would you like personalized recommendations for beard care products",
+      "based on your beard type and concerns?",
+    ],
+    image: "",
+    fields: {
+      type: "single",
+      options: ["Yes", "No"],
+    },
+    condition(answers) {
+      if (!answers || !answers.length || answers.includes("No")) {
+        return [
+          { type: "remove", slides: ["n-1", "n-2", "n-3", "n-4", "n-5"] },
+        ];
+      } else {
+        return [{ type: "add", slides: ["n-1", "n-2", "n-5"] }];
+      }
     },
   },
   {
@@ -440,12 +444,13 @@ const initialQuestions: QuestionProps[] = [
         "Itching",
         "Flaking",
         "Sensitivity/irritation",
+        "None",
       ],
     },
     condition(answers) {
       const slideParams: { type: "add" | "remove"; slides: string[] }[] = [];
 
-      if (!answers || !answers.length) {
+      if (!answers || !answers.length || !answers.includes("None")) {
         return [{ type: "remove", slides: ["n-3", "n-4"] }];
       }
 
@@ -518,10 +523,10 @@ const initialQuestions: QuestionProps[] = [
         "Frizz",
         "Breakage",
         "Split ends",
-        "Lack of volume",
-        "Uneven Growth",
-        "Difficulty styling",
-        "Lack of Softness",
+        // "Lack of volume",
+        // "Uneven Growth",
+        // "Difficulty styling",
+        // "Lack of Softness",
       ],
     },
   },
@@ -590,13 +595,17 @@ export default function Home() {
     const current = (updated[index].answer as string[]) || ([] as string[]);
 
     let newAnswers = [];
-
     if (current.includes(value)) {
       newAnswers = current.filter((a) => a !== value);
     } else {
       newAnswers = [...current, value];
     }
 
+    if (value.includes("None")) {
+      newAnswers = ["None"];
+    } else {
+      newAnswers = newAnswers.filter((a) => !a.includes("None"));
+    }
     updated[index] = { ...updated[index], answer: newAnswers };
 
     setForm(updated);
@@ -803,6 +812,7 @@ export default function Home() {
                 />
               ) : (
                 <Question
+                  numbering={`${questions.findIndex((q) => q.id === iq.id)}/${questions.length}`}
                   answers={form.find((q) => q.id === iq.id)?.answer || ""}
                   key={`question-${iq.id}`}
                   {...iq}
@@ -833,7 +843,7 @@ export default function Home() {
               const found = form.find((q) => q.id === currentSlide.id);
 
               if (!found) return false;
-              if (found.type === "multi") return false;
+              // if (found.type === "multi") return false;
 
               if (!found.answer || found.answer.length === 0) return true;
             })()}
@@ -853,8 +863,10 @@ export default function Home() {
             onClose={() => setOpenFirstModal(false)}
           />
         )}
+        {/* {openResultsModal && ( */}
         {openResultsModal && (
-          <ResultsModal2 isOpen={openResultsModal} onRetry={resetQuiz} />
+          // <ResultsModal2 isOpen={openResultsModal} onRetry={resetQuiz} />
+          <ResultsModal3 isOpen={openResultsModal} onRetry={resetQuiz} />
         )}
       </main>
     </>
@@ -904,6 +916,7 @@ interface QuestionProps {
 
 export function Question({
   id,
+  numbering,
   image,
   questionName,
   question,
@@ -916,6 +929,7 @@ export function Question({
 }: QuestionProps & {
   handleInput: (e: ChangeEvent<HTMLInputElement>) => void;
   answers: string | string[] | null;
+  numbering: string;
 }) {
   const [modal, setModal] = useState<{
     open: boolean;
@@ -929,8 +943,10 @@ export function Question({
   return (
     <div className="h-full gap-6 w-full flex flex-col lg:flex-row max-w-7xl sm:px-12 px-8 m-auto">
       <div className="basis-full min-w-auto lg:min-w-lg flex flex-col justify-center lg:basis-2/5">
-        <div className="max-w-sm lg:max-w-xl text-3xl lg:text-4xl ">
+        <div className="max-w-sm lg:max-w-xl text-2xl lg:text-3xl ">
           <>
+            {/* <div className="flex gap-2"> */}
+            <p className="text-black/70 text-base pb-1">{numbering}</p>
             {question.map((q, i) => (
               <h2 key={`q-sentence-${i}`} className="">
                 {q}{" "}
@@ -939,6 +955,7 @@ export function Question({
                 )}
               </h2>
             ))}
+            {/* </div> */}
           </>
           {sub && (
             <p className="text-zinc-500 pt-6 font-normal text-lg">{sub}</p>
@@ -1153,8 +1170,8 @@ function ImageOptionCard(
       <div
         className={`relative aspect-square w-full overflow-hidden rounded-2xl border transition-all ${
           checked
-            ? "border-black"
-            : "border-black/10 group-hover:border-black/30"
+            ? "border-red-black ring-black ring-2 "
+            : "border-black/40 group-hover:ring-2 group-hover:ring-black/40 "
         }`}
       >
         <img
@@ -1198,13 +1215,15 @@ function ImageOptionGroups({
   handleInput: (e: ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
-    <div className="flex items-center flex-col gap-3 w-full">
+    // <div className="flex items-center flex-col gap-3 w-full">
+    <div className="flex items-start justify-center gap-3 w-full">
       {groups.map((group) => (
         <div key={`group-${group.label}`} className="flex flex-col gap-1">
-          <h3 className="text-xs font-bold uppercase tracking-wide text-zinc-500">
+          <h3 className="text-[10px] sm:text-sm w-full text-center font-bold uppercase tracking-wide text-zinc-800">
             {group.label}
           </h3>
-          <div className="flex flex-row flex-wrap gap-1 sm:gap-4">
+          {/* <div className="flex flex-row flex-wrap gap-1 sm:gap-4"> */}
+          <div className="flex flex-col gap-1 sm:gap-4">
             {group.options.map((option) => (
               <ImageOptionCard
                 key={`option-${option.value}`}

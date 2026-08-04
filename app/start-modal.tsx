@@ -8,10 +8,11 @@ import { Slider, SliderState } from "./slider";
 // Add, remove, or reorder slides freely — each entry is raw JSX, rendered as-is.
 
 const slides: ReactNode[] = [
-  <>
-    <div className="flex relative  justify-center items-center gap-3 flex-col w-full">
-      <h2 className="text-lg  font-bold pb-12">
-        BHC | B2C online Haircare Consultation
+  <div className="h-full ">
+    <div className="flex relative justify-center items-center gap-3 flex-col grow w-full">
+      <h2 className="text-lg font-bold pb-12">
+        {/* BHC | B2C online Haircare Consultation */}
+        Online Haircare Consultation
       </h2>
       <img
         src="blob-2.jpg"
@@ -32,9 +33,9 @@ const slides: ReactNode[] = [
         hair.
       </p>
     </div>
-  </>,
+  </div>,
 
-  <>
+  <div className="h-full">
     <h2 className="text-lg font-bold pb-4">Understand Your Hair</h2>
     <div className="space-y-12">
       <p>
@@ -43,67 +44,77 @@ const slides: ReactNode[] = [
         section will provide you with a personalized care routine and product
         recommendations.
       </p>
-      <div className="flex flex-col gap-2">
-        <div className="flex items-end gap-2">
+      <div className="flex justify-center flex-wrap gap-12 sm:gap-2">
+        {/* <div className="flex flex-row sm:flex-col items-end sm:items-center gap-2"> */}
+        <div className="flex flex-col items-center gap-2">
           <img
             src="icons/bb.jpg"
             alt="Before Bath"
-            className="w-8 h-8 object-cover"
+            // className="w-8 h-8 sm:w-20 sm:h-20 object-cover"
+            className="w-16 h-16 object-cover"
           />
 
-          <span className="hidden sm:inline text-xs font-bold tracking-wide truncate">
+          <span className="text-xs font-bold tracking-wide truncate">
             Before Bath
           </span>
         </div>
-        <div className="flex items-end gap-2">
+        {/* <div className="flex flex-row sm:flex-col items-end sm:items-center gap-2"> */}
+        <div className="flex flex-col items-center gap-2">
           <img
             src="icons/bb.jpg"
             alt="Before Bath"
-            className="w-8 h-8  object-cover"
+            // className="w-8 h-8 sm:w-20 sm:h-20 object-cover"
+            className="w-16 h-16 object-cover"
           />
 
-          <span className="hidden sm:inline text-xs font-bold tracking-wide truncate">
+          <span className=" text-xs font-bold tracking-wide truncate">
             In Bath
           </span>
         </div>
-        <div className="flex items-end gap-2">
+        {/* <div className="flex flex-row sm:flex-col items-end sm:items-center gap-2"> */}
+        <div className="flex flex-col items-center gap-2">
           <img
             src="icons/ab.jpg"
             alt="After Bath"
-            className="w-8 h-8  object-cover"
+            // className="w-8 h-8 sm:w-20 sm:h-20 object-cover"
+            className="w-16 h-16 object-cover"
           />
 
-          <span className="hidden sm:inline text-xs font-bold tracking-wide truncate">
+          <span className="text-xs font-bold tracking-wide truncate">
             After Bath
           </span>
         </div>
-        <div className="flex items-end gap-2">
+        {/* <div className="flex flex-row sm:flex-col items-end sm:items-center gap-2"> */}
+        <div className="flex flex-col items-center gap-2">
           <img
             src="icons/style.jpg"
             alt="Style"
-            className="w-8 h-8 object-cover"
+            // className="w-8 h-8 sm:w-20 sm:h-20 object-cover"
+            className="w-16 h-16 object-cover"
           />
 
-          <span className="hidden sm:inline text-xs font-bold tracking-wide truncate">
+          <span className=" text-xs font-bold tracking-wide truncate">
             Styling
           </span>
         </div>
-        <div className="flex items-end gap-2">
+        {/* <div className="flex flex-row sm:flex-col items-end sm:items-center gap-2"> */}
+        <div className="flex flex-col items-center gap-2">
           <img
             src="icons/derma.jpg"
             alt="Extra Derma Care"
-            className="w-8 h-8  object-cover"
+            // className="w-8 h-8 sm:w-20 sm:h-20 object-cover"
+            className="w-16 h-16 object-cover"
           />
 
-          <span className="hidden sm:inline text-xs font-bold tracking-wide truncate">
+          <span className=" text-xs font-bold tracking-wide truncate">
             Extra Derma Care
           </span>
         </div>
       </div>
     </div>
-  </>,
+  </div>,
 
-  <>
+  <div className="h-full">
     <h2 className="text-lg font-bold pb-4">Get Your Recommendations</h2>
     <div className="space-y-12">
       <p>
@@ -117,7 +128,7 @@ const slides: ReactNode[] = [
         <p className="text-xs">Click to start your hair wellness journey.</p>
       </div>
     </div>
-  </>,
+  </div>,
 ];
 
 export function StartModal({
@@ -149,15 +160,15 @@ export function StartModal({
   };
 
   return (
-    <Modal size="xl" isOpen={isOpen} onClose={onClose}>
-      <ModalHeader>KEUNE CARE CONSULTATION</ModalHeader>
+    <Modal size="full" className="max-w-xl" isOpen={isOpen} onClose={onClose}>
+      {/* <ModalHeader>KEUNE CARE CONSULTATION</ModalHeader> */}
 
       {/* Stacks all slides in the same grid cell so the container height
           always matches the tallest slide; Slider then overlays the
           active one on top of that reserved space. */}
-      <ModalContent>
-        <div style={{ width: "100%" }}>
-          {/* {slides.map((slide, i) => (
+      <ModalContent className="h-full" scrollable>
+        {/* <div className="w-full"> */}
+        {/* {slides.map((slide, i) => (
           <ModalContent
             key={i}
             className="col-start-1 row-start-1 invisible text-center px-12"
@@ -166,21 +177,21 @@ export function StartModal({
           </ModalContent>
         ))} */}
 
-          {/* <div className="col-start-1 row-start-1"> */}
-          <Slider
-            slideToShow={current}
-            timer={0}
-            isLoop={false}
-            onChange={setSlider}
-          >
-            {slides.map((slide, i) => (
-              <ModalContent key={i} className="text-center px-12">
-                {slide}
-              </ModalContent>
-            ))}
-          </Slider>
-          {/* </div> */}
-        </div>
+        {/* <div className="col-start-1 row-start-1"> */}
+        <Slider
+          slideToShow={current}
+          timer={0}
+          isLoop={false}
+          onChange={setSlider}
+        >
+          {slides.map((slide, i) => (
+            // <ModalContent key={i} className="text-center px-12">
+            <div className="h-full">{slide}</div>
+            // </ModalContent>
+          ))}
+        </Slider>
+        {/* </div> */}
+        {/* </div> */}
       </ModalContent>
       <ModalFooter>
         <div className="flex justify-center items-center gap-3 flex-col w-full">
