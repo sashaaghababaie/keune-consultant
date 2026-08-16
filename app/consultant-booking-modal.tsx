@@ -90,12 +90,12 @@ function PhotoInstructions({ onUnderstand }: { onUnderstand: () => void }) {
   return (
     <div className="flex flex-col items-center gap-4">
       <p className="text-xs text-zinc-500 text-center max-w-xs">
-        We'll ask you to take a photo of your hair. Please show the back of
-        your hair, like the example below.
+        We'll ask you to take a photo of your hair. Please show the back of your
+        hair, like the example below.
       </p>
       <div className="w-full max-w-xs aspect-square bg-zinc-100 border border-black/10 overflow-hidden">
         <img
-          src="/hair-behind.jpg"
+          src="hair-behind.jpg"
           alt="Example: correct way to photograph your hair"
           className="w-full h-full object-cover"
         />
